@@ -29,6 +29,12 @@ class Pose(object):
         self.position = np.array(position)
         self.heading = heading
 
+    def getPose(self):
+        return self.position, self.heading
+
+    def setPose(self, position, heading):
+        self.position = np.array(position)
+        self.heading = heading
 
 class Robot(object):
 

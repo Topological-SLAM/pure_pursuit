@@ -46,8 +46,28 @@ while True:
         break
 
     # if we want to update vehicle commands while running world
-    planned_linear_velocity, steer = controller.control(world.robot)
-    world.robot.set_commands(planned_linear_velocity, steer)
+    old_pose = world.robot.pose
+    min_distance = 10000.0
+    op_steer = 0.0
+    op_velocity = 0.0
+    for i in range(1):
+        world.robot.pose = old_pose
+        look_ahead_dist = 0.1 + i * 0.1
+        controller.setLookHeadDistance(look_ahead_dist)
+        planned_linear_velocity, steer = controller.control(world.robot)
+        world.robot.set_commands(planned_linear_velocity, steer)
+
+        distance = controller.nearDistance(world.robot)
+        if min_distance > distance:
+            min_distance = distance
+            op_steer = steer
+            op_velocity = planned_linear_velocity
+
+
+    print ("Optimal velo {}, steer {}".format(op_velocity, op_steer))
+
+    # with the optimal steer & velocity
+    world.robot.set_commands(op_velocity, op_steer)
 
     # update world
     world.update(dt)

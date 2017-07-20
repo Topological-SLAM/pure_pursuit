@@ -84,11 +84,22 @@ class PurePursuit(object):
         self.is_goal_point_reached = False
         self.line_segment, self.total_path_len = self._parametrize_path()
 
+    def setLookHeadDistance(self, look_ahead_distance):
+        self.look_ahead_distance = look_ahead_distance
+        print ('set look ahead distance is {}'.format(look_ahead_distance))
+
+    def nearDistance(self, robot):
+        robot_pose = robot.pose
+        nearest_distance = self._find_nearest_path_point(robot_pose)
+        print ('current nearest distance is {}'.format(nearest_distance))        
+        return nearest_distance
+
     def control(self, robot):
 
         robot_pose = robot.pose
         logging.debug('************************************')
         logging.debug('Is robot near goal point? {}'.format(self.is_goal_point_reached))
+
         if not self.is_goal_point_reached:
             # if goal point not reached, use pure pursuit controller
             self._update_goal_point(robot_pose)
@@ -129,6 +140,8 @@ class PurePursuit(object):
                 # current robot heading is towards goal postion, move to there directly
                 logging.debug('Planned control: linear {}, angular {}, robot heading points towards goal'.format(self.desired_linear_velocity, 0))
                 return self.desired_linear_velocity, 0
+
+
 
     def _update_goal_point(self, robot_pose):
         """
@@ -182,7 +195,6 @@ class PurePursuit(object):
             if index < len(self.waypoints) - 1:
                 end_waypoint = self.waypoints[index + 1]
                 line_len = np.linalg.norm(end_waypoint.position - start_waypoint.position)
-
                 nearest_dist_to_curr_line = np.linalg.norm(robot_pose.position - start_waypoint.position)
 
                 # s coordinate of the nearest point on the current line segment to the robot position
@@ -230,7 +242,9 @@ class PurePursuit(object):
         end_to_start_vec = self.waypoints[line_seg_index].position - self.waypoints[line_seg_index + 1].position
         unit_vec = (end_to_start_vec) / np.linalg.norm(end_to_start_vec)
 
-        return self.waypoints[line_seg_index + 1].position + dist_to_end_point_of_line_seg * unit_vec
+        pose = self.waypoints[line_seg_index + 1].position + dist_to_end_point_of_line_seg * unit_vec
+        print (pose)
+        return pose
 
     def _parametrize_path(self):
         """
